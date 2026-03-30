@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Tesoro de las 3 Llaves</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background-color: #eef2f7; margin: 0; padding: 20px; }
+        .card { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 450px; margin: auto; border: 4px solid #ffd700; }
+        h1 { color: #2c3e50; font-size: 24px; }
+        #cofre { font-size: 100px; margin: 20px 0; display: block; }
+        .instruccion { font-size: 18px; color: #34495e; margin-bottom: 20px; min-height: 50px; }
+        .btn { background: #4a90e2; color: white; border: none; padding: 15px 25px; border-radius: 12px; font-size: 18px; cursor: pointer; transition: 0.3s; margin: 10px; }
+        .btn:hover { background: #357abd; transform: scale(1.05); }
+        .btn-figura { width: 80px; height: 80px; margin: 10px; border: 4px solid #ddd; cursor: pointer; transition: 0.2s; }
+        input { padding: 12px; font-size: 20px; width: 80px; border-radius: 8px; border: 2px solid #ddd; text-align: center; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>🏆 Misión: Abrir el Tesoro</h1>
+    <div id="pantalla-juego">
+        <div id="cofre">🔒</div>
+        <p id="mensaje-turno" class="instruccion">¡Pulsa el botón para empezar la aventura!</p>
+        
+        <div id="area-retos">
+            <button id="btn-inicio" class="btn" onclick="iniciarJuego()">¡Empezar Aventura!</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let fase = 0;
+    let solucionActual = 0;
+
+    function iniciarJuego() {
+        fase = 0;
+        document.getElementById('cofre').innerText = "🔒";
+        cargarReto();
+    }
+
+    function cargarReto() {
+        const area = document.getElementById('area-retos');
+        const mensaje = document.getElementById('mensaje-turno');
+        area.innerHTML = '';
+
+        if (fase === 0) {
+            // RETO 4 AÑOS: Formas y Colores
+            mensaje.innerText = "Turno del peque (4 años): Toca el CÍRCULO ROJO";
+            area.innerHTML = `
+                <div style="display: flex; justify-content: center;">
+                    <div class="btn-figura" style="background: blue; border-radius: 50%;" onclick="error()"></div>
+                    <div class="btn-figura" style="background: red; border-radius: 50%;" onclick="siguienteFase()"></div>
+                    <div class="btn-figura" style="background: red;" onclick="error()"></div>
+                </div>
+            `;
+        } else if (fase === 1) {
+            // RETO 9 AÑOS: Sumas Aleatorias
+            let n1 = Math.floor(Math.random() * 50) + 10;
+            let n2 = Math.floor(Math.random() * 40) + 5;
+            solucionActual = n1 + n2;
+            mensaje.innerText = `Turno del mediano (9 años): ¿Cuánto es ${n1} + ${n2}?`;
+            area.innerHTML = `
+                <input type="number" id="inputResp" placeholder="?">
+                <br><button class="btn" onclick="validarRespuesta()">Comprobar</button>
+            `;
+        } else if (fase === 2) {
+            // RETO 11 AÑOS: Multiplicación Aleatoria
+            let m1 = Math.floor(Math.random() * 12) + 2;
+            let m2 = Math.floor(Math.random() * 9) + 2;
+            solucionActual = m1 * m2;
+            mensaje.innerText = `Turno del mayor (11 años): ¿Cuánto es ${m1} x ${m2}?`;
+            area.innerHTML = `
+                <input type="number" id="inputResp" placeholder="?">
+                <br><button class="btn" onclick="validarRespuesta()">Abrir Cofre</button>
+            `;
+        }
+    }
+
+    function validarRespuesta() {
+        const r = document.getElementById('inputResp').value;
+        if (parseInt(r) === solucionActual) {
+            siguienteFase();
+        } else {
+            alert("¡Casi! Repasad el cálculo juntos.");
+        }
+    }
+
+    function siguienteFase() {
+        fase++;
+        if (fase < 3) {
+            alert("¡Bien hecho! ¡Siguiente cerradura!");
+            cargarReto();
+        } else {
+            ganar();
+        }
+    }
+
+    function error() {
+        alert("¡Esa no es la forma correcta! Fíjate bien en el color y la forma.");
+    }
+
+    function ganar() {
+        document.getElementById('mensaje-turno').innerText = "¡FELICIDADES EQUIPO!";
+        document.getElementById('cofre').innerText = "🔓";
+        document.getElementById('area-retos').innerHTML = `
+            <h2 style="color: green;">¡Cofre Abierto! 💰</h2>
+            <p>Habéis trabajado genial en equipo.</p>
+            <button class="btn" onclick="iniciarJuego()">Jugar otra vez</button>
+        `;
+    }
+</script>
+
+</body>
+</html>
