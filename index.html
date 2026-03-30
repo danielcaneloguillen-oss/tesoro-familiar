@@ -3,182 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>El Gran Tesoro Familiar</title>
+    <title>Tesoro Familiar 🏆</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; text-align: center; background-color: #f0f7ff; margin: 0; padding: 20px; touch-action: manipulation; }
-        .card { background: white; border-radius: 25px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); max-width: 450px; margin: auto; border: 5px solid #ffd700; }
-        h1 { color: #2c3e50; font-size: 22px; margin-top: 0; }
-        #cofre { font-size: 90px; margin: 15px 0; display: block; }
-        .instruccion { font-size: 19px; color: #34495e; margin-bottom: 15px; min-height: 70px; font-weight: bold; line-height: 1.4; }
-        .nombre-niño { color: #e67e22; font-size: 24px; text-transform: uppercase; display: block; margin-bottom: 8px; border-bottom: 2px solid #eee; padding-bottom: 5px; }
-        .progreso { font-size: 14px; color: #95a5a6; margin-bottom: 10px; }
-        .btn { background: #4a90e2; color: white; border: none; padding: 15px 25px; border-radius: 15px; font-size: 18px; cursor: pointer; margin: 10px; transition: 0.2s; }
-        .btn:active { transform: scale(0.95); }
-        .btn-opcion { min-width: 80px; min-height: 80px; margin: 8px; border: 4px solid #ddd; display: inline-flex; align-items: center; justify-content: center; font-size: 30px; font-weight: bold; cursor: pointer; border-radius: 15px; }
-        input { padding: 12px; font-size: 26px; width: 110px; border-radius: 10px; border: 3px solid #cbd5e0; text-align: center; margin-bottom: 10px; }
-        .hidden { display: none; }
+        .card { background: white; border-radius: 25px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); max-width: 450px; margin: auto; border: 5px solid #ffd700; position: relative; }
+        #crono { font-size: 18px; color: #e74c3c; font-weight: bold; background: #ffebeb; padding: 5px 15px; border-radius: 20px; display: inline-block; margin-bottom: 10px; }
+        #cofre { font-size: 90px; margin: 15px 0; display: block; transition: all 0.5s; }
+        .nombre-niño { color: #e67e22; font-size: 24px; text-transform: uppercase; display: block; margin-bottom: 8px; border-bottom: 2px solid #eee; }
+        .instruccion { font-size: 19px; min-height: 70px; font-weight: bold; }
+        .btn { background: #4a90e2; color: white; border: none; padding: 15px 25px; border-radius: 15px; font-size: 18px; cursor: pointer; margin: 10px; }
+        .btn-opcion { min-width: 80px; min-height: 80px; margin: 8px; border: 4px solid #ddd; display: inline-flex; align-items: center; justify-content: center; font-size: 30px; font-weight: bold; border-radius: 15px; }
+        input { padding: 12px; font-size: 26px; width: 110px; border-radius: 10px; border: 3px solid #cbd5e0; text-align: center; }
+        .record { font-size: 14px; color: #27ae60; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="card">
+    <div id="crono">Tiempo: 00:00</div>
     <div id="pantalla-juego">
         <div id="cofre">🔒</div>
-        <div id="progreso-texto" class="progreso"></div>
-        <p id="mensaje-turno" class="instruccion">¿Preparados para el reto definitivo?</p>
-        
+        <p id="mensaje-turno" class="instruccion">¿Listos para batir el récord?</p>
         <div id="area-retos">
-            <button id="btn-inicio" class="btn" onclick="iniciarJuego()">¡Empezar Misión!</button>
+            <button class="btn" onclick="iniciarJuego()">¡Empezar Misión!</button>
         </div>
     </div>
+    <div id="mejor-tiempo" class="record"></div>
 </div>
 
 <script>
-    let hijoActual = 0; // 0: Bruno, 1: Carla, 2: Mateo
-    let preguntaActual = 1;
-    const totalPreguntasPorHijo = 3;
-    let solucionCorrecta = null;
+    let hijoActual = 0, preguntaActual = 1, solucionCorrecta = null;
+    let tiempoInicio, intervaloCrono;
 
     function iniciarJuego() {
-        hijoActual = 0;
-        preguntaActual = 1;
+        hijoActual = 0; preguntaActual = 1;
         document.getElementById('cofre').innerText = "🔒";
+        document.getElementById('cofre').style.transform = "scale(1)";
+        
+        // Iniciar cronómetro
+        tiempoInicio = Date.now();
+        clearInterval(intervaloCrono);
+        intervaloCrono = setInterval(actualizarCrono, 1000);
+        
         cargarReto();
+    }
+
+    function actualizarCrono() {
+        let segs = Math.floor((Date.now() - tiempoInicio) / 1000);
+        let m = Math.floor(segs / 60).toString().padStart(2, '0');
+        let s = (segs % 60).toString().padStart(2, '0');
+        document.getElementById('crono').innerText = `Tiempo: ${m}:${s}`;
     }
 
     function cargarReto() {
         const area = document.getElementById('area-retos');
         const mensaje = document.getElementById('mensaje-turno');
-        const progreso = document.getElementById('progreso-texto');
         area.innerHTML = '';
-        progreso.innerText = `Pregunta ${preguntaActual} de ${totalPreguntasPorHijo}`;
-
-        if (hijoActual === 0) {
-            generarRetoBruno(mensaje, area);
-        } else if (hijoActual === 1) {
-            generarRetoCarla(mensaje, area);
-        } else if (hijoActual === 2) {
-            generarRetoMateo(mensaje, area);
-        }
-    }
-
-    // --- RETOS BRUNO (4 AÑOS) ---
-    function generarRetoBruno(msg, area) {
-        msg.innerHTML = `<span class="nombre-niño">Turno de BRUNO</span>`;
-        let opciones = [];
-        
-        if (preguntaActual === 1) {
-            msg.innerHTML += "Toca el COLOR VERDE";
-            opciones = [
-                { h: '<div class="btn-opcion" style="background:green" onclick="acierto()"></div>' },
-                { h: '<div class="btn-opcion" style="background:red" onclick="fallo()"></div>' },
-                { h: '<div class="btn-opcion" style="background:blue" onclick="fallo()"></div>' }
-            ];
-        } else if (preguntaActual === 2) {
-            msg.innerHTML += "Toca el CÍRCULO AMARILLO";
-            opciones = [
-                { h: '<div class="btn-opcion" style="background:yellow; border-radius:50%" onclick="acierto()"></div>' },
-                { h: '<div class="btn-opcion" style="background:yellow" onclick="fallo()"></div>' },
-                { h: '<div class="btn-opcion" style="background:blue; border-radius:50%" onclick="fallo()"></div>' }
-            ];
-        } else {
-            let numSol = Math.floor(Math.random() * 5) + 1;
-            msg.innerHTML += `Busca el NÚMERO ${numSol}`;
-            for(let i=1; i<=3; i++) {
-                let n = (i === 1) ? numSol : (numSol + i) % 6 || 7;
-                opciones.push({ h: `<div class="btn-opcion" onclick="${n===numSol?'acierto()':'fallo()'}">${n}</div>` });
-            }
-        }
-        mostrarOpciones(area, opciones);
-    }
-
-    // --- RETOS CARLA (9 AÑOS) ---
-    function generarRetoCarla(msg, area) {
-        msg.innerHTML = `<span class="nombre-niño">Turno de CARLA</span>`;
-        let n1 = Math.floor(Math.random() * 30) + 10;
-        let n2 = Math.floor(Math.random() * 20) + 5;
-        
-        if (preguntaActual === 2) { // Resta en la segunda pregunta
-            solucionCorrecta = n1 + n2 - n2; // Truco para que siempre sea positiva
-            msg.innerHTML += `¿Cuánto es ${n1+n2} - ${n2}?`;
-        } else {
-            solucionCorrecta = n1 + n2;
-            msg.innerHTML += `¿Cuánto es ${n1} + ${n2}?`;
-        }
-        
-        area.innerHTML = `<input type="number" id="inputR" pattern="[0-9]*" inputmode="numeric"><br>
-                          <button class="btn" onclick="validarMatematica()">Comprobar</button>`;
-    }
-
-    // --- RETOS MATEO (11 AÑOS) ---
-    function generarRetoMateo(msg, area) {
-        msg.innerHTML = `<span class="nombre-niño">Turno de MATEO</span>`;
-        let m1, m2;
-        
-        if (preguntaActual === 3) { // El reto final es más difícil
-            m1 = Math.floor(Math.random() * 5) + 11; // 11 a 15
-            m2 = Math.floor(Math.random() * 4) + 6;  // 6 a 9
-        } else {
-            m1 = Math.floor(Math.random() * 9) + 3;
-            m2 = Math.floor(Math.random() * 8) + 3;
-        }
-        
-        solucionCorrecta = m1 * m2;
-        msg.innerHTML += `Calcula: ${m1} x ${m2}`;
-        area.innerHTML = `<input type="number" id="inputR" pattern="[0-9]*" inputmode="numeric"><br>
-                          <button class="btn" onclick="validarMatematica()">¡Abrir Cerradura!</button>`;
-    }
-
-    function mostrarOpciones(area, opciones) {
-        opciones.sort(() => Math.random() - 0.5);
-        let htmlFinal = '<div style="display: flex; justify-content: center; flex-wrap: wrap;">';
-        opciones.forEach(opt => htmlFinal += opt.h);
-        htmlFinal += '</div>';
-        area.innerHTML = htmlFinal;
-    }
-
-    function acierto() {
-        if (preguntaActual < totalPreguntasPorHijo) {
-            preguntaActual++;
-            cargarReto();
-        } else {
-            pasarSiguienteHijo();
-        }
-    }
-
-    function validarMatematica() {
-        const res = document.getElementById('inputR').value;
-        if (parseInt(res) === solucionCorrecta) {
-            acierto();
-        } else {
-            alert("¡Casi! Repasadlo juntos.");
-        }
-    }
-
-    function pasarSiguienteHijo() {
-        hijoActual++;
-        preguntaActual = 1;
-        if (hijoActual < 3) {
-            alert("¡Cerradura superada! Siguiente turno.");
-            cargarReto();
-        } else {
-            ganar();
-        }
-    }
-
-    function fallo() { alert("¡Oh! Inténtalo otra vez."); }
-
-    function ganar() {
-        document.getElementById('progreso-texto').innerText = "";
-        document.getElementById('mensaje-turno').innerHTML = "¡LO HABÉIS CONSEGUIDO!";
-        document.getElementById('cofre').innerText = "🔓";
-        document.getElementById('area-retos').innerHTML = `
-            <h2 style="color: #27ae60;">¡TESORO ABIERTO! 💰</h2>
-            <p>Bruno, Carla y Mateo son los mejores.</p>
-            <button class="btn" onclick="iniciarJuego()">Volver a jugar</button>
-        `;
-    }
-</script>
-
-</body>
-</html>
